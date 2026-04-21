@@ -16,11 +16,11 @@
  */
 
 const DRIVE_CONFIG = {
-  API_KEY: 'trim-ruler-494012-d1',
+  API_KEY: 'AIzaSyAIU2q4xcMmcaej6A0ktS3GnZYFAMjEwww',
   FOLDERS: {
-    certificados: 'https://drive.google.com/drive/folders/113cnBxIjjzRbRPk9ZvmLSEl3xtd1ABrf?usp=sharing',
-    inversores:   'https://drive.google.com/drive/folders/1nPrMBaYLk3ezLj5KoXAx4AG7lVsYlBMA?usp=sharing',
-    modulos:      'https://drive.google.com/drive/folders/1rFgm1pecGK3aTKxF_Pl-LweuMEDjkUeA?usp=sharing',
+    certificados: 'https://drive.google.com/drive/folders/113cnBxIjjzRbRPk9ZvmLSEl3xtd1ABrf',
+    inversores:   'https://drive.google.com/drive/folders/1nPrMBaYLk3ezLj5KoXAx4AG7lVsYlBMA',
+    modulos:      'https://drive.google.com/drive/folders/1rFgm1pecGK3aTKxF_Pl-LweuMEDjkUeA',
   },
   FIELDS: 'files(id,name,size,modifiedTime,mimeType,description,webViewLink,webContentLink)',
 };
