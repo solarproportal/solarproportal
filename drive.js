@@ -16,12 +16,17 @@
  */
 
 const DRIVE_CONFIG = {
+  // ⚠️ SUBSTITUA com sua Google Drive API Key
+  // Obtenha em: https://console.cloud.google.com → APIs → Credentials
   API_KEY: 'AIzaSyAIU2q4xcMmcaej6A0ktS3GnZYFAMjEwww',
+
   FOLDERS: {
-    certificados: 'https://drive.google.com/drive/folders/113cnBxIjjzRbRPk9ZvmLSEl3xtd1ABrf',
-    inversores:   'https://drive.google.com/drive/folders/1nPrMBaYLk3ezLj5KoXAx4AG7lVsYlBMA',
-    modulos:      'https://drive.google.com/drive/folders/1rFgm1pecGK3aTKxF_Pl-LweuMEDjkUeA',
+    certificados: '113cnBxIjjzRbRPk9ZvmLSEl3xtd1ABrf',
+    inversores:   '1nPrMBaYLk3ezLj5KoXAx4AG7lVsYlBMA',
+    modulos:      '1rFgm1pecGK3aTKxF_Pl-LweuMEDjkUeA',
   },
+
+  // Campos que queremos buscar de cada arquivo
   FIELDS: 'files(id,name,size,modifiedTime,mimeType,description,webViewLink,webContentLink)',
 };
 
