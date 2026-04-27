@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolarPro Portal — Painel Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--bg2:#13161d;--bg3:#1a1e27;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --amber:#F59E0B;--amber2:#FCD34D;--amber-dim:rgba(245,158,11,0.12);
+  --amber-glow:rgba(245,158,11,0.25);
+  --blue:#38BDF8;--green:#4ADE80;--red:#f87171;
+  --text:#E8EAF0;--text2:#9299AA;--text3:#555D70;
+  --radius:10px;--radius-lg:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 2rem;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.tb-left{display:flex;align-items:center;gap:16px}
+.tb-logo{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:var(--text2)}
+.tb-logo svg{width:28px;height:28px}
+.tb-badge{
+  background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);
+  color:var(--amber);font-size:11px;padding:2px 10px;border-radius:20px;
+  font-family:'DM Mono',monospace;
+}
+.tb-right a{
+  color:var(--text3);font-size:13px;text-decoration:none;
+  padding:6px 14px;border:1px solid var(--border);border-radius:8px;
+  transition:all .15s;
+}
+.tb-right a:hover{color:var(--text);border-color:var(--border2)}
+
+.layout{display:flex;min-height:calc(100vh - 60px)}
+
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  padding:1.5rem 1rem;
+  display:flex;flex-direction:column;gap:4px;
+}
+.sidebar-label{
+  font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--text3);padding:0 8px;margin:1rem 0 .5rem;font-weight:500;
+}
+.sidebar-label:first-child{margin-top:0}
+.slink{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:8px;
+  color:var(--text3);font-size:13.5px;cursor:pointer;
+  transition:all .15s;border:none;background:none;
+  width:100%;text-align:left;font-family:'DM Sans',sans-serif;
+}
+.slink:hover{background:var(--bg3);color:var(--text2)}
+.slink.active{background:var(--amber-dim);color:var(--amber);font-weight:500}
+.slink svg{width:16px;height:16px;flex-shrink:0}
+
+.main{flex:1;padding:2rem;overflow-y:auto}
+
+/* Panels */
+.panel{display:none}
+.panel.active{display:block}
+
+.panel-title{font-size:20px;font-weight:500;margin-bottom:.25rem;letter-spacing:-.5px}
+.panel-sub{font-size:13px;color:var(--text3);margin-bottom:2rem}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:2rem}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:1.25rem;
+}
+.stat-num{font-size:28px;font-weight:500;font-family:'DM Mono',monospace;color:var(--amber);margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--text3)}
+.stat-badge{
+  display:inline-block;font-size:10px;padding:1px 8px;
+  border-radius:20px;margin-top:6px;
+  background:rgba(74,222,128,0.1);color:var(--green);border:1px solid rgba(74,222,128,0.2);
+}
+
+/* Config panel */
+.config-section{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:1.5rem;margin-bottom:1.25rem;
+}
+.config-title{font-size:15px;font-weight:500;margin-bottom:.25rem}
+.config-desc{font-size:12px;color:var(--text3);margin-bottom:1.25rem;line-height:1.5}
+.form-row{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.form-label{font-size:12px;color:var(--text2);font-weight:500}
+.form-input{
+  width:100%;padding:9px 12px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);
+  font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;
+  transition:border-color .15s;
+}
+.form-input::placeholder{color:var(--text3)}
+.form-input:focus{border-color:var(--amber)}
+.form-hint{font-size:11px;color:var(--text3);line-height:1.5;font-family:'DM Mono',monospace}
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:.75rem}
+.folder-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.folder-name{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.folder-dot{width:6px;height:6px;border-radius:50%}
+.folder-dot.cert{background:#38BDF8}
+.folder-dot.inv{background:#F59E0B}
+.folder-dot.mod{background:#4ADE80}
+
+.btn-save{
+  padding:10px 22px;background:var(--amber);color:#0d0f14;
+  border:none;border-radius:var(--radius);font-size:13.5px;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.btn-save:hover{background:var(--amber2);transform:translateY(-1px)}
+.btn-outline{
+  padding:9px 20px;background:transparent;color:var(--text2);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Step guide */
+.step-guide{counter-reset:steps}
+.step{
+  display:flex;gap:1rem;padding:1rem 0;
+  border-bottom:1px solid var(--border);
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);
+  color:var(--amber);font-size:12px;font-weight:600;font-family:'DM Mono',monospace;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-content{}
+.step-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.step-desc{font-size:12.5px;color:var(--text2);line-height:1.6}
+.step-desc code{
+  font-family:'DM Mono',monospace;background:var(--bg3);
+  border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-size:11px;
+}
+.step-desc a{color:var(--amber);text-decoration:none}
+.step-desc a:hover{text-decoration:underline}
+
+/* Files panel */
+.file-table{width:100%;border-collapse:collapse}
+.file-table th{
+  font-size:11px;color:var(--text3);text-align:left;
+  padding:.5rem 1rem;border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:.5px;font-weight:500;
+}
+.file-table td{padding:.75rem 1rem;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle}
+.file-table tr:hover td{background:var(--bg3)}
+.ft-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace}
+.ft-cert{background:rgba(56,189,248,0.1);color:#38BDF8}
+.ft-inv{background:rgba(245,158,11,0.1);color:#F59E0B}
+.ft-mod{background:rgba(74,222,128,0.1);color:#4ADE80}
+.ft-new{background:rgba(239,68,68,0.1);color:#f87171}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:9999;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);
+  padding:12px 20px;font-size:13.5px;color:var(--text);
+  opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;
+  max-width:320px;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:rgba(74,222,128,0.4)}
+.toast.err{border-color:rgba(239,68,68,0.4)}
+
+@media(max-width:768px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;padding:1rem}
+  .sidebar-label{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-logo">
+      <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="#F59E0B" stroke-width="1.5"/><path d="M18 6 L22 14 L30 14 L24 20 L26 28 L18 23 L10 28 L12 20 L6 14 L14 14 Z" fill="#F59E0B" opacity="0.9"/></svg>
+      SolarPro Portal
+    </div>
+    <span class="tb-badge">Painel Admin</span>
+  </div>
+  <div class="tb-right">
+    <a href="../index.html">← Ver portal</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-label">Visão geral</div>
+    <button class="slink active" onclick="showPanel('dashboard')">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+      Dashboard
+    </button>
+    <button class="slink" onclick="showPanel('arquivos')">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+      Arquivos
+    </button>
+
+    <div class="sidebar-label">Configuração</div>
+    <button class="slink" onclick="showPanel('config')">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/></svg>
+      Configurar Drive
+    </button>
+    <button class="slink" onclick="showPanel('guia')">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/></svg>
+      Guia de uso
+    </button>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="panel-title">Dashboard</div>
+      <div class="panel-sub">Visão geral dos documentos disponíveis no portal</div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="dash-certs">—</div>
+          <div class="stat-label">Certificados</div>
+          <div class="stat-badge" id="dash-certs-new">— novos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="dash-inv">—</div>
+          <div class="stat-label">Datasheets inversores</div>
+          <div class="stat-badge" id="dash-inv-new">— novos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="dash-mod">—</div>
+          <div class="stat-label">Datasheets módulos</div>
+          <div class="stat-badge" id="dash-mod-new">— novos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="dash-total">—</div>
+          <div class="stat-label">Total de arquivos</div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Modo de operação</div>
+        <div class="config-desc" id="dash-mode-desc">Verificando configuração...</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-outline" onclick="showPanel('config')">Configurar Google Drive</button>
+          <a href="../index.html" class="btn-outline" style="text-decoration:none;display:inline-block">Abrir portal →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARQUIVOS -->
+    <div class="panel" id="panel-arquivos">
+      <div class="panel-title">Arquivos</div>
+      <div class="panel-sub">Lista de todos os documentos carregados no portal</div>
+
+      <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="chip active" onclick="filterArquivos('todos',this)">Todos</button>
+        <button class="chip" onclick="filterArquivos('cert',this)">Certificados</button>
+        <button class="chip" onclick="filterArquivos('inv',this)">Inversores</button>
+        <button class="chip" onclick="filterArquivos('mod',this)">Módulos</button>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th>Nome do arquivo</th>
+              <th>Categoria</th>
+              <th>Marca</th>
+              <th>Tamanho</th>
+              <th>Data</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="files-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:2rem">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="panel" id="panel-config">
+      <div class="panel-title">Configurar Google Drive</div>
+      <div class="panel-sub">Conecte o portal à conta <strong>solarproportal@gmail.com</strong></div>
+
+      <div class="config-section">
+        <div class="config-title">1. Google Drive API Key</div>
+        <div class="config-desc">
+          A API Key permite que o portal leia os arquivos públicos do seu Drive sem login.
+          Obtenha em <a href="https://console.cloud.google.com" target="_blank" style="color:var(--amber)">console.cloud.google.com</a>
+          → APIs &amp; Services → Credentials → Create Credentials → API Key.
+          Depois restrinja à Google Drive API.
+        </div>
+        <div class="form-row">
+          <label class="form-label">API Key</label>
+          <input type="text" class="form-input" id="cfg-apikey" placeholder="AIzaSy...">
+          <div class="form-hint">Esta chave ficará no arquivo js/drive.js do seu servidor</div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">2. IDs das Pastas do Drive</div>
+        <div class="config-desc">
+          No Google Drive (solarproportal@gmail.com), crie 3 pastas e compartilhe cada uma como
+          <strong style="color:var(--text)">"Qualquer pessoa com o link pode visualizar"</strong>.
+          Copie o ID da URL de cada pasta e cole abaixo.
+        </div>
+        <div class="folder-grid">
+          <div class="folder-item">
+            <div class="folder-name"><div class="folder-dot cert"></div>Certificados</div>
+            <input type="text" class="form-input" id="cfg-folder-certs" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs...">
+          </div>
+          <div class="folder-item">
+            <div class="folder-name"><div class="folder-dot inv"></div>Inversores</div>
+            <input type="text" class="form-input" id="cfg-folder-inv" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs...">
+          </div>
+          <div class="folder-item">
+            <div class="folder-name"><div class="folder-dot mod"></div>Módulos</div>
+            <input type="text" class="form-input" id="cfg-folder-mod" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs...">
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">3. Nomenclatura dos arquivos</div>
+        <div class="config-desc">
+          Para que o portal identifique a marca e o modelo automaticamente, use o padrão:<br><br>
+          <code>MARCA_MODELO_TIPO.pdf</code><br><br>
+          Exemplos:<br>
+          <code>Growatt_MIN6000TL_Certificado.pdf</code><br>
+          <code>Deye_SUN6K_SG03LP1_Datasheet.pdf</code><br>
+          <code>Canadian_HiKu6_550W_Datasheet.pdf</code><br><br>
+          Você também pode adicionar uma <strong style="color:var(--text)">descrição</strong> ao arquivo no Drive (clique com botão direito → Detalhes → Descrição) para aparecer no card do portal.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-save" onclick="saveConfig()">Salvar configuração</button>
+        <button class="btn-outline" onclick="testConnection()">Testar conexão</button>
+      </div>
+
+      <div id="cfg-output" style="margin-top:1.5rem;display:none">
+        <div class="config-section">
+          <div class="config-title">Código gerado — cole em js/drive.js</div>
+          <pre id="cfg-code" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.6;margin-top:.75rem;background:var(--bg3);padding:1rem;border-radius:var(--radius);border:1px solid var(--border)"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA -->
+    <div class="panel" id="panel-guia">
+      <div class="panel-title">Guia de uso</div>
+      <div class="panel-sub">Como configurar e usar o SolarPro Portal</div>
+
+      <div class="config-section">
+        <div class="config-title">Passo a passo para colocar o site no ar</div>
+        <div class="step-guide">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Criar conta no Google Cloud</div>
+              <div class="step-desc">
+                Acesse <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> com a conta <code>solarproportal@gmail.com</code>.
+                Crie um novo projeto (ex: "SolarPro Portal").
+                Ative a <strong>Google Drive API</strong> em APIs &amp; Services → Library.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Gerar API Key</div>
+              <div class="step-desc">
+                Em APIs &amp; Services → Credentials → Create Credentials → API Key.
+                Após criar, clique em "Restrict Key" e selecione <strong>Google Drive API</strong>.
+                Copie a chave gerada.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Criar pastas no Google Drive</div>
+              <div class="step-desc">
+                No Google Drive da conta <code>solarproportal@gmail.com</code>, crie 3 pastas:
+                <code>Certificados</code>, <code>Inversores</code> e <code>Módulos</code>.
+                Para cada pasta: botão direito → Compartilhar → "Qualquer pessoa com o link" → Visualizador.
+                Copie o ID de cada pasta da URL.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Configurar o portal</div>
+              <div class="step-desc">
+                Acesse o painel <strong>Configurar Drive</strong> ao lado, insira a API Key e os IDs das pastas.
+                Clique em "Salvar configuração" e copie o código gerado para o arquivo <code>js/drive.js</code>.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">Hospedar o site</div>
+              <div class="step-desc">
+                Opção gratuita: <a href="https://pages.github.com" target="_blank">GitHub Pages</a> — crie um repositório público, suba todos os arquivos do portal e ative o GitHub Pages nas configurações.<br>
+                Ou use qualquer hospedagem de arquivos estáticos: Netlify, Vercel, Cloudflare Pages, ou hospedagem compartilhada convencional.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <div class="step-title">Adicionar documentos</div>
+              <div class="step-desc">
+                Para adicionar novos arquivos, basta fazer upload no Google Drive nas pastas correspondentes.
+                O portal lê o Drive em tempo real — não é necessário alterar código.
+                Nomeie os arquivos como <code>MARCA_MODELO_TIPO.pdf</code> para melhor organização.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Dúvidas ou suporte</div>
+        <div class="config-desc" style="margin-bottom:.75rem">Entre em contato pelo e-mail do portal:</div>
+        <a href="mailto:solarproportal@gmail.com" style="color:var(--amber);font-size:14px">solarproportal@gmail.com</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Load data from parent
+const DEMO = {
+  certs:[
+    {title:'Growatt MIN 3000-6000TL-X',category:'cert',brand:'Growatt',size:'1.2 MB',date:'Mar/2026',isNew:true},
+    {title:'Growatt SPH 3000-10000TL BL-UP',category:'cert',brand:'Growatt',size:'890 KB',date:'Jan/2026',isNew:false},
+    {title:'Fronius Primo GEN24 Plus',category:'cert',brand:'Fronius',size:'2.1 MB',date:'Fev/2026',isNew:false},
+    {title:'Deye SUN-6K-SG03LP1',category:'cert',brand:'Deye',size:'1.4 MB',date:'Jan/2026',isNew:false},
+    {title:'SAJ R5 Series 3-6kW',category:'cert',brand:'SAJ',size:'950 KB',date:'Abr/2026',isNew:true},
+    {title:'SMA Sunny Boy 3.0-5.0',category:'cert',brand:'SMA',size:'1.8 MB',date:'Fev/2026',isNew:false},
+    {title:'Huawei SUN2000-5KTL-M1',category:'cert',brand:'Huawei',size:'2.0 MB',date:'Mar/2026',isNew:true},
+    {title:'GoodWe GW5000-ET',category:'cert',brand:'GoodWe',size:'1.6 MB',date:'Abr/2026',isNew:true},
+  ],
+  inversores:[
+    {title:'Growatt MIN 3000-6000TL-X',category:'inv',brand:'Growatt',size:'3.4 MB',date:'Jan/2026',isNew:false},
+    {title:'Growatt SPH 5000TL BL-UP',category:'inv',brand:'Growatt',size:'2.9 MB',date:'Mar/2026',isNew:true},
+    {title:'Fronius Primo GEN24 5.0',category:'inv',brand:'Fronius',size:'4.2 MB',date:'Fev/2026',isNew:false},
+    {title:'Deye SUN-12K-SG04LP3',category:'inv',brand:'Deye',size:'3.1 MB',date:'Abr/2026',isNew:true},
+    {title:'SMA Sunny Tripower 10.0',category:'inv',brand:'SMA',size:'5.0 MB',date:'Jan/2026',isNew:false},
+    {title:'Huawei SUN2000-5KTL-M1',category:'inv',brand:'Huawei',size:'2.7 MB',date:'Mar/2026',isNew:false},
+    {title:'SAJ R5-5K-T2',category:'inv',brand:'SAJ',size:'2.2 MB',date:'Fev/2026',isNew:false},
+    {title:'GoodWe GW5000-ET',category:'inv',brand:'GoodWe',size:'3.8 MB',date:'Abr/2026',isNew:true},
+    {title:'WEG SIW500H M020',category:'inv',brand:'WEG',size:'4.5 MB',date:'Mar/2026',isNew:false},
+  ],
+  modulos:[
+    {title:'Canadian Solar HiKu6 CS6W-550MS',category:'mod',brand:'Canadian Solar',size:'1.8 MB',date:'Mar/2026',isNew:false},
+    {title:'BYD BYD415B10-51HZA',category:'mod',brand:'BYD',size:'1.2 MB',date:'Abr/2026',isNew:true},
+    {title:'Longi Solar Hi-MO 6 LR5-72HTH',category:'mod',brand:'Longi',size:'2.0 MB',date:'Jan/2026',isNew:false},
+    {title:'Trina Solar Vertex S TSM-440DE09',category:'mod',brand:'Trina',size:'1.5 MB',date:'Fev/2026',isNew:false},
+    {title:'JA Solar JAM72S30-545/MR',category:'mod',brand:'JA Solar',size:'1.9 MB',date:'Abr/2026',isNew:true},
+    {title:'Risen Solar RSM120-8-600M',category:'mod',brand:'Risen',size:'2.3 MB',date:'Mar/2026',isNew:false},
+    {title:'Jinko Solar Tiger Neo JKM580N',category:'mod',brand:'Jinko Solar',size:'2.1 MB',date:'Fev/2026',isNew:false},
+    {title:'LONGi Hi-MO X6 LR5-54HTH',category:'mod',brand:'Longi',size:'1.7 MB',date:'Abr/2026',isNew:true},
+  ]
+};
+
+const ALL = [...DEMO.certs, ...DEMO.inversores, ...DEMO.modulos];
+let currentFilter = 'todos';
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.slink').forEach(s => s.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className='toast', 3000);
+}
+
+// Dashboard
+function initDashboard() {
+  const nc = DEMO.certs.length, ni = DEMO.inversores.length, nm = DEMO.modulos.length;
+  document.getElementById('dash-certs').textContent = nc;
+  document.getElementById('dash-inv').textContent = ni;
+  document.getElementById('dash-mod').textContent = nm;
+  document.getElementById('dash-total').textContent = nc+ni+nm;
+  document.getElementById('dash-certs-new').textContent = DEMO.certs.filter(d=>d.isNew).length + ' novos';
+  document.getElementById('dash-inv-new').textContent = DEMO.inversores.filter(d=>d.isNew).length + ' novos';
+  document.getElementById('dash-mod-new').textContent = DEMO.modulos.filter(d=>d.isNew).length + ' novos';
+  document.getElementById('dash-mode-desc').innerHTML =
+    '⚠️ Portal rodando em <strong style="color:#F59E0B">modo demonstração</strong>. ' +
+    'Configure a API Key do Google Drive e os IDs das pastas para exibir seus documentos reais.';
+}
+
+// Files table
+function renderFilesTable(filter) {
+  const list = filter === 'todos' ? ALL : ALL.filter(d => d.category === filter);
+  const catLabel = {cert:'Certificado', inv:'Inversor', mod:'Módulo'};
+  const tbody = document.getElementById('files-tbody');
+  tbody.innerHTML = list.map(d => `
+    <tr>
+      <td><span style="font-weight:500">${d.title}</span></td>
+      <td><span class="ft-badge ft-${d.category}">${catLabel[d.category]}</span></td>
+      <td style="color:var(--text2)">${d.brand}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${d.size}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${d.date}</td>
+      <td>${d.isNew ? '<span class="ft-badge ft-new">Novo</span>' : '<span style="font-size:12px;color:var(--text3)">—</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function filterArquivos(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.panel-arquivos .chip, #panel-arquivos .chip').forEach(c => c.classList.remove('active'));
+  // Simple: use the buttons
+  document.querySelectorAll('#panel-arquivos button.chip').forEach(c => {
+    c.classList.toggle('active', c.textContent.toLowerCase().includes(f) || (f==='todos' && c.textContent==='Todos'));
+  });
+  renderFilesTable(f);
+}
+
+// Config
+function saveConfig() {
+  const key = document.getElementById('cfg-apikey').value.trim();
+  const fc = document.getElementById('cfg-folder-certs').value.trim();
+  const fi = document.getElementById('cfg-folder-inv').value.trim();
+  const fm = document.getElementById('cfg-folder-mod').value.trim();
+
+  if (!key || !fc || !fi || !fm) {
+    toast('Preencha todos os campos antes de salvar', 'err'); return;
+  }
+  const code = `const DRIVE_CONFIG = {
+  API_KEY: '${key}',
+  FOLDERS: {
+    certificados: '${fc}',
+    inversores:   '${fi}',
+    modulos:      '${fm}',
+  },
+  FIELDS: 'files(id,name,size,modifiedTime,mimeType,description,webViewLink,webContentLink)',
+};`;
+  document.getElementById('cfg-code').textContent = code;
+  document.getElementById('cfg-output').style.display = 'block';
+  toast('✅ Código gerado! Copie e cole no arquivo js/drive.js', 'ok');
+}
+
+async function testConnection() {
+  const key = document.getElementById('cfg-apikey').value.trim();
+  const fc = document.getElementById('cfg-folder-certs').value.trim();
+  if (!key || !fc) { toast('Insira a API Key e pelo menos o ID da pasta de Certificados', 'err'); return; }
+
+  toast('Testando conexão com o Drive...');
+  try {
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent("'"+fc+"' in parents")}&key=${key}&pageSize=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    toast('✅ Conexão com o Drive bem-sucedida!', 'ok');
+  } catch(e) {
+    toast('❌ Erro: ' + e.message, 'err');
+  }
+}
+
+// chip style for arquivos filter
+const chipStyle = `.chip{padding:5px 14px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--border2);color:var(--text2)}
+.chip.active{background:var(--amber-dim);border-color:rgba(245,158,11,0.4);color:var(--amber);font-weight:500}`;
+const s = document.createElement('style');
+s.textContent = chipStyle;
+document.head.appendChild(s);
+
+initDashboard();
+renderFilesTable('todos');
+</script>
+</body>
+</html>
