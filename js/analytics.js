@@ -36,7 +36,7 @@
 // ============================================================================
 // CONFIGURAÇÃO — substitua pelo seu Measurement ID após criar conta GA4
 // ============================================================================
-var GA4_ID = 'G-XXXXXXXXXX';  // <-- TROCAR pelo ID real (ex: G-ABC123XYZ4)
+var GA4_ID = 'G-NHC1HP260Q';  // <-- TROCAR pelo ID real (ex: G-ABC123XYZ4)
 
 // ============================================================================
 // Carregamento do GA4 (somente se o ID foi configurado)
